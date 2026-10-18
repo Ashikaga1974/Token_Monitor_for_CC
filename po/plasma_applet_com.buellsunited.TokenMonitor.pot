@@ -1,0 +1,183 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-17 23:31+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: package/contents/config/config.qml:8
+msgid "Appearance"
+msgstr ""
+
+#: package/contents/config/config.qml:14
+msgid "Notifications"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:18
+msgid "Language:"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:20
+msgid "System Default"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:27
+msgid "Color Scheme / Style:"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:29
+msgid "Plasma Theme (Default)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:30
+msgid "Light (Breeze Light)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:31
+msgid "Dark (Breeze Dark)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:32
+msgid "Transparent (No Card)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:33
+msgid "Modern Glass (Frosted)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:39
+msgid "Taskbar / Panel Style:"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:41
+msgid "Text (Default)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:42
+msgid "Progress Ring (Compact)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:43
+msgid "Combined (Ring + Text)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:49
+msgid "Refresh Interval:"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:53
+msgid "15 seconds"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:54
+msgid "30 seconds"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:55
+msgid "1 minute (Default)"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:56
+msgid "2 minutes"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:57
+msgid "5 minutes"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:63
+msgid "Support & Donations"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:67
+msgid "Buy me a coffee:"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:72
+msgid "☕ Buy Me a Coffee"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:87
+msgid "Credits & Acknowledgments"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:91
+msgid "Inspiration:"
+msgstr ""
+
+#: package/contents/ui/config/configAppearance.qml:103
+msgid "CLI tool by JuanjoFuchs"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:28
+msgid "Desktop Notifications:"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:29
+msgid "Enable native KDE Plasma notifications on limit hazard"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:34
+msgid "Thresholds & Warning Levels"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:40
+msgid "Burn Rate Warning:"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:41
+msgid "Alert when current pace exhausts limit before reset (100% projected)"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:46
+msgid "Warning Threshold 1:"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:51
+#: package/contents/ui/config/configNotifications.qml:82
+msgid "Alert at"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:69
+msgid "(Default: 85%)"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:77
+msgid "Critical Threshold 2:"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:100
+msgid "(Default: 95%)"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:108
+msgid "Diagnostics & Test"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:112
+msgid "Test Notification:"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:117
+msgid "🔔 Send Test Notification"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:124
+msgid "Test notification sent ✓"
+msgstr ""
+
+#: package/contents/ui/config/configNotifications.qml:126
+msgid "Error sending notification"
+msgstr ""

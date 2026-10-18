@@ -1,0 +1,27 @@
+# Markdown-Dateien ausschließen (auf Wunsch)
+*.md
+!README.md
+!README.de.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!SECURITY.md
+!.github/**/*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Scripts & Admin Utilities
+/scripts/
+reset_git_history.sh
+_Admin/reset_git_history.sh
+/_Admin/

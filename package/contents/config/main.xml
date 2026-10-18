@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile name=""/>
+  <group name="Appearance">
+    <!-- 0: Theme Default, 1: Hell (Light), 2: Dunkel (Dark), 3: Transparent, 4: Modern Glass -->
+    <entry name="colorSchemeMode" type="Int">
+      <label>Farbschema des Widgets (0=Plasma Theme, 1=Hell, 2=Dunkel, 3=Transparent, 4=Modern Glass)</label>
+      <default>0</default>
+    </entry>
+    <entry name="refreshInterval" type="Int">
+      <label>Aktualisierungsintervall in Sekunden</label>
+      <default>60</default>
+    </entry>
+    <!-- 0: System Default, 1: English, 2: Deutsch -->
+    <entry name="languageMode" type="Int">
+      <label>Sprachauswahl (0=System, 1=English, 2=Deutsch)</label>
+      <default>0</default>
+    </entry>
+    <!-- 0: Text (Default), 1: Progress Ring (Compact), 2: Combined (Ring + Text) -->
+    <entry name="panelDisplayStyle" type="Int">
+      <label>Anzeigestil in der Taskleiste (0=Text, 1=Ring, 2=Kombiniert)</label>
+      <default>0</default>
+    </entry>
+  </group>
+  <group name="Notifications">
+    <entry name="notificationsEnabled" type="Bool">
+      <label>Native KDE-Benachrichtigungen aktivieren</label>
+      <default>true</default>
+    </entry>
+    <entry name="notifyBurnRate" type="Bool">
+      <label>Warnung bei kritischer Burn-Rate (100 % vor Reset)</label>
+      <default>true</default>
+    </entry>
+    <entry name="notifyThreshold1" type="Bool">
+      <label>Warnstufe 1 aktivieren</label>
+      <default>true</default>
+    </entry>
+    <entry name="threshold1Percent" type="Int">
+      <label>Schwellenwert für Warnstufe 1 in Prozent</label>
+      <default>85</default>
+    </entry>
+    <entry name="notifyThreshold2" type="Bool">
+      <label>Warnstufe 2 (Kritisch) aktivieren</label>
+      <default>true</default>
+    </entry>
+    <entry name="threshold2Percent" type="Int">
+      <label>Schwellenwert für Warnstufe 2 in Prozent</label>
+      <default>95</default>
+    </entry>
+  </group>
+</kcfg>

@@ -1,0 +1,14 @@
+[Unit]
+Description=Token Monitor for Claude Code Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m backend.cli serve --port 48291
+WorkingDirectory=%h/.local/share/token-monitor
+Environment=PYTHONPATH=%h/.local/share/token-monitor
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

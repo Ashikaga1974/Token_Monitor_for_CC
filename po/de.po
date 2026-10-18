@@ -1,0 +1,312 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: com.buellsunited.TokenMonitor 0.0.8\n"
+"Report-Msgid-Bugs-To: info@buells-united.com\n"
+"POT-Creation-Date: 2026-10-10 19:16+0200\n"
+"PO-Revision-Date: 2026-10-10 19:16+0200\n"
+"Last-Translator: buells-united.com <info@buells-united.com>\n"
+"Language-Team: German <de@li.org>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: package/contents/ui/main.qml:181
+#: package/contents/ui/FullRepresentation.qml:65
+msgid "Token Monitor for Claude Code"
+msgstr "Token Monitor für Claude Code"
+
+#: package/contents/ui/main.qml:81
+msgid "Loading data…"
+msgstr "Lade Daten…"
+
+#: package/contents/ui/main.qml:83
+#, javascript-format
+msgid "Session (5h): %1% | Weekly: %2%"
+msgstr "Session (5h): %1% | Weekly: %2%"
+
+#: package/contents/ui/main.qml:121
+msgid "JSON parse error"
+msgstr "JSON-Parse-Fehler"
+
+#: package/contents/ui/main.qml:124
+msgid "Daemon unreachable (port 48291)"
+msgstr "Daemon nicht erreichbar (Port 48291)"
+
+#: package/contents/ui/main.qml:131
+msgid "Daemon request timed out"
+msgstr "Timeout bei Daemon-Abfrage"
+
+#: package/contents/ui/main.qml:136
+msgid "Daemon connection failed"
+msgstr "Verbindung zu Daemon fehlgeschlagen"
+
+#: package/contents/ui/FullRepresentation.qml:32
+msgid "%1 %2"
+msgstr "%1 %2 Uhr"
+
+#: package/contents/ui/FullRepresentation.qml:38
+msgid "No exhaustion"
+msgstr "Keine Erschöpfung"
+
+#: package/contents/ui/FullRepresentation.qml:67
+msgid "Refresh now"
+msgstr "Jetzt neu laden"
+
+#: package/contents/ui/FullRepresentation.qml:94
+msgid "Tip: Run './install.sh' or 'systemctl --user start token-monitor'"
+msgstr "Tipp: './install.sh' ausführen oder 'systemctl --user start token-monitor'"
+
+
+#: package/contents/ui/FullRepresentation.qml:120
+msgid "5-Hour Session"
+msgstr "5-Stunden Session"
+
+#: package/contents/ui/FullRepresentation.qml:144
+#: package/contents/ui/FullRepresentation.qml:229
+#, javascript-format
+msgid "Target Pace: %1%"
+msgstr "Soll-Pace: %1%"
+
+#: package/contents/ui/FullRepresentation.qml:153
+#: package/contents/ui/FullRepresentation.qml:238
+msgid "Reset: %1 (in %2)"
+msgstr "Reset: %1 (in %2)"
+
+#: package/contents/ui/FullRepresentation.qml:153
+#: package/contents/ui/FullRepresentation.qml:238
+msgid "Reset in: %1"
+msgstr "Reset in: %1"
+
+#: package/contents/ui/FullRepresentation.qml:175
+msgid "Burn: %1%/h (%2)"
+msgstr "Burn: %1%/h (%2)"
+
+#: package/contents/ui/FullRepresentation.qml:181
+msgid "100% in ~%1"
+msgstr "100% in ~%1"
+
+#: package/contents/ui/FullRepresentation.qml:181
+msgid "Safe before reset ✓"
+msgstr "Sicher vor Reset ✓"
+
+#: package/contents/ui/FullRepresentation.qml:207
+msgid "Weekly Limit (7 Days)"
+msgstr "Wochen-Limit (7 Tage)"
+
+#: package/contents/ui/FullRepresentation.qml:259
+#, javascript-format
+msgid "Burn: %1%/h"
+msgstr "Burn: %1%/h"
+
+#: package/contents/ui/FullRepresentation.qml:265
+msgid "Limit reached before reset!"
+msgstr "Limit vor Reset erreicht!"
+
+#: package/contents/ui/FullRepresentation.qml:67
+#, javascript-format
+msgid "Limit in %1 · reset in %2"
+msgstr "Limit in %1 erreicht · Reset erst in %2"
+
+#: package/contents/ui/FullRepresentation.qml:68
+msgid "Limit reached before reset"
+msgstr "Limit wird vor dem Reset erreicht"
+
+#: package/contents/ui/FullRepresentation.qml:71
+#, javascript-format
+msgid "Over budget · limit in %1"
+msgstr "Tempo über Budget · Limit in %1"
+
+#: package/contents/ui/FullRepresentation.qml:72
+msgid "Over budget"
+msgstr "Tempo über Budget"
+
+#: package/contents/ui/FullRepresentation.qml:265
+msgid "Sufficient until reset ✓"
+msgstr "Reicht bis Reset ✓"
+
+#: package/contents/ui/FullRepresentation.qml:278
+msgid "Updated: %1"
+msgstr "Aktualisiert: %1"
+
+#: package/contents/ui/FullRepresentation.qml:290
+#: package/contents/ui/config/configAppearance.qml:50
+msgid "☕ Buy Me a Coffee"
+msgstr "☕ Buy Me a Coffee"
+
+#: package/contents/ui/config/configAppearance.qml:16
+msgid "Color Scheme / Style:"
+msgstr "Farbschema / Stil:"
+
+#: package/contents/ui/config/configAppearance.qml:18
+msgid "Plasma Theme (Default)"
+msgstr "Plasma Theme (Standard)"
+
+#: package/contents/ui/config/configAppearance.qml:19
+msgid "Light (Breeze Light)"
+msgstr "Hell (Breeze Light)"
+
+#: package/contents/ui/config/configAppearance.qml:20
+msgid "Dark (Breeze Dark)"
+msgstr "Dunkel (Breeze Dark)"
+
+#: package/contents/ui/config/configAppearance.qml:21
+msgid "Transparent (No Card)"
+msgstr "Transparent (Ohne Kachel)"
+
+#: package/contents/ui/config/configAppearance.qml:22
+msgid "Modern Glass (Frosted)"
+msgstr "Modernes Glas (Milchglas)"
+
+#: package/contents/ui/config/configAppearance.qml:27
+msgid "Refresh Interval:"
+msgstr "Aktualisierungsintervall:"
+
+#: package/contents/ui/config/configAppearance.qml:31
+msgid "15 seconds"
+msgstr "15 Sekunden"
+
+#: package/contents/ui/config/configAppearance.qml:32
+msgid "30 seconds"
+msgstr "30 Sekunden"
+
+#: package/contents/ui/config/configAppearance.qml:33
+msgid "1 minute (Default)"
+msgstr "1 Minute (Standard)"
+
+#: package/contents/ui/config/configAppearance.qml:34
+msgid "2 minutes"
+msgstr "2 Minuten"
+
+#: package/contents/ui/config/configAppearance.qml:35
+msgid "5 minutes"
+msgstr "5 Minuten"
+
+#: package/contents/ui/config/configAppearance.qml:41
+msgid "Support & Donations"
+msgstr "Unterstützung & Spenden"
+
+#: package/contents/ui/config/configAppearance.qml:45
+msgid "Buy me a coffee:"
+msgstr "Kaffee spendieren:"
+
+#: package/contents/config/config.qml:8
+msgid "Appearance"
+msgstr "Erscheinungsbild"
+
+#: package/contents/ui/config/configAppearance.qml:17
+msgid "Language:"
+msgstr "Sprache:"
+
+#: package/contents/ui/config/configAppearance.qml:19
+msgid "System Default"
+msgstr "Systemstandard"
+
+msgid "idle"
+msgstr "inaktiv"
+
+msgid "low"
+msgstr "niedrig"
+
+msgid "moderate"
+msgstr "moderat"
+
+msgid "high"
+msgstr "hoch"
+
+msgid "critical"
+msgstr "kritisch"
+
+#: package/contents/ui/config/configAppearance.qml:76
+msgid "Credits & Acknowledgments"
+msgstr "Danksagung & Credits"
+
+#: package/contents/ui/config/configAppearance.qml:80
+msgid "Inspiration:"
+msgstr "Inspiration:"
+
+#: package/contents/ui/config/configAppearance.qml:92
+msgid "CLI tool by JuanjoFuchs"
+msgstr "CLI-Tool von JuanjoFuchs"
+
+#: package/contents/config/config.qml:14
+msgid "Notifications"
+msgstr "Benachrichtigungen"
+
+#: package/contents/ui/config/configNotifications.qml:28
+msgid "Desktop Notifications:"
+msgstr "Desktop-Benachrichtigungen:"
+
+#: package/contents/ui/config/configNotifications.qml:29
+msgid "Enable native KDE Plasma notifications on limit hazard"
+msgstr "Native KDE Plasma Benachrichtigungen bei Limit-Gefahr aktivieren"
+
+#: package/contents/ui/config/configNotifications.qml:34
+msgid "Thresholds & Warning Levels"
+msgstr "Schwellen- & Warnwerte"
+
+#: package/contents/ui/config/configNotifications.qml:40
+msgid "Burn Rate Warning:"
+msgstr "Burn-Rate-Warnung:"
+
+#: package/contents/ui/config/configNotifications.qml:41
+msgid "Alert when current pace exhausts limit before reset (100% projected)"
+msgstr "Warnen, wenn aktuelles Tempo das Limit vor Reset aufbraucht (100 % prognostiziert)"
+
+#: package/contents/ui/config/configNotifications.qml:46
+msgid "Warning Threshold 1:"
+msgstr "Warnstufe 1:"
+
+#: package/contents/ui/config/configNotifications.qml:51
+#: package/contents/ui/config/configNotifications.qml:82
+msgid "Alert at"
+msgstr "Warnen ab"
+
+#: package/contents/ui/config/configNotifications.qml:69
+msgid "(Default: 85%)"
+msgstr "(Standard: 85 %)"
+
+#: package/contents/ui/config/configNotifications.qml:77
+msgid "Critical Threshold 2:"
+msgstr "Kritische Warnstufe 2:"
+
+#: package/contents/ui/config/configNotifications.qml:100
+msgid "(Default: 95%)"
+msgstr "(Standard: 95 %)"
+
+#: package/contents/ui/config/configNotifications.qml:108
+msgid "Diagnostics & Test"
+msgstr "Diagnose & Test"
+
+#: package/contents/ui/config/configNotifications.qml:112
+msgid "Test Notification:"
+msgstr "Test-Benachrichtigung:"
+
+#: package/contents/ui/config/configNotifications.qml:117
+msgid "🔔 Send Test Notification"
+msgstr "🔔 Test-Benachrichtigung senden"
+
+#: package/contents/ui/config/configNotifications.qml:124
+msgid "Test notification sent ✓"
+msgstr "Test-Benachrichtigung gesendet ✓"
+
+#: package/contents/ui/config/configNotifications.qml:126
+msgid "Error sending notification"
+msgstr "Fehler beim Senden"
+
+msgid "Model Breakdown"
+msgstr "Modell-Aufschlüsselung"
+
+msgid "By Model (Weekly)"
+msgstr "Nach Modell (Wöchentlich)"
+
+msgid "Start Background Service"
+msgstr "Hintergrunddienst starten"
+
+msgid "Starting service…"
+msgstr "Dienst wird gestartet…"
+
+msgid "Auto-starts and enables systemd user service 'token-monitor.service'"
+msgstr "Startet und aktiviert automatisch den systemd-Dienst 'token-monitor.service'"
+

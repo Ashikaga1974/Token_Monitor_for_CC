@@ -1,0 +1,24 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Name": "Token Monitor for Claude Code",
+        "Name[de]": "Token Monitor für Claude Code",
+        "Id": "com.buellsunited.TokenMonitor",
+        "Description": "Monitors Claude Code token rate limits, burn rate and budget pace",
+        "Description[de]": "Überwacht Claude Code Token-Limits, Burn-Rate und Budget-Pace",
+        "Category": "System Information",
+        "Icon": "com.buellsunited.TokenMonitor",
+        "Authors": [
+            {
+                "Email": "info@buells-united.com",
+                "Name": "buells-united.com"
+            }
+        ],
+        "Website": "https://kde.buells-united.com",
+        "Version": "0.0.8",
+        "License": "GPL-3.0-or-later"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-MainScript": "ui/main.qml"
+}
