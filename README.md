@@ -1,6 +1,7 @@
 # Token Monitor for Claude Code
 
 [![KDE Plasma 6](https://img.shields.io/badge/KDE%20Plasma-6.0%2B-1d99f3?style=flat-square&logo=kde&logoColor=white)](https://kde.org)
+[![KDE Store](https://img.shields.io/badge/KDE%20Store-2379462-1d99f3?style=flat-square&logo=kde&logoColor=white)](https://store.kde.org/p/2379462)
 [![Python 3](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776ab?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![Version](https://img.shields.io/badge/version-v0.0.8-orange?style=flat-square)](package/metadata.json)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)](LICENSE)
@@ -154,6 +155,7 @@ If you find this widget useful and want to support continued development, consid
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/buellsunited)
 
+- **KDE Store**: [store.kde.org/p/2379462](https://store.kde.org/p/2379462)
 - **Website**: [kde.buells-united.com](https://kde.buells-united.com)
 - **Donations**: [buymeacoffee.com/buellsunited](https://buymeacoffee.com/buellsunited)
 
