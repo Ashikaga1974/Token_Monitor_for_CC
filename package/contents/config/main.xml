@@ -25,6 +25,12 @@
       <default>0</default>
     </entry>
   </group>
+  <group name="Api">
+    <entry name="apiBaseUrl" type="String">
+      <label>Base-URL der Anthropic Usage-API (nur ändern bei Proxy/Gateway)</label>
+      <default>https://api.anthropic.com</default>
+    </entry>
+  </group>
   <group name="Notifications">
     <entry name="notificationsEnabled" type="Bool">
       <label>Native KDE-Benachrichtigungen aktivieren</label>

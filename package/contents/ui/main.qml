@@ -110,6 +110,17 @@ PlasmoidItem {
         return 95;
     }
 
+    readonly property string apiBaseUrl: {
+        if (plasmoid.configuration.Api && plasmoid.configuration.Api.apiBaseUrl !== undefined) {
+            return plasmoid.configuration.Api.apiBaseUrl;
+        }
+        if (plasmoid.configuration.apiBaseUrl !== undefined) {
+            return plasmoid.configuration.apiBaseUrl;
+        }
+        return "https://api.anthropic.com";
+    }
+
+    onApiBaseUrlChanged: root.syncApiConfig()
     onNotificationsEnabledChanged: root.syncNotificationConfig()
     onNotifyBurnRateChanged: root.syncNotificationConfig()
     onNotifyThreshold1Changed: root.syncNotificationConfig()
@@ -257,7 +268,16 @@ PlasmoidItem {
         xhr.send(payload);
     }
 
+    function syncApiConfig() {
+        var payload = JSON.stringify({ base_url: root.apiBaseUrl });
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://127.0.0.1:48291/api-config");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(payload);
+    }
+
     Component.onCompleted: {
+        root.syncApiConfig();
         root.syncNotificationConfig();
     }
 

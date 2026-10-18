@@ -8,6 +8,7 @@ import time
 from typing import Optional, Dict, Any
 
 from .cli import refresh_and_compute_stats
+from .client import get_api_base_url, set_api_base_url
 from .notifier import NotificationManager, NotificationConfig, send_desktop_notification
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,9 @@ class StatHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         elif self.path == "/notify-config":
             body = json.dumps(_notification_manager.config.__dict__).encode("utf-8")
             self._send_json_response(200, body)
+        elif self.path == "/api-config":
+            body = json.dumps({"base_url": get_api_base_url()}).encode("utf-8")
+            self._send_json_response(200, body)
         else:
             self.send_response(404)
             self.end_headers()
@@ -124,6 +128,28 @@ class StatHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 self._send_json_response(200, body)
             except Exception as e:
                 logger.error(f"Failed to update notify config: {e}")
+                body = json.dumps({"error": str(e)}).encode("utf-8")
+                self._send_json_response(400, body)
+        elif self.path == "/api-config":
+            try:
+                content_length_header = self.headers.get("Content-Length")
+                length = int(content_length_header) if content_length_header else 0
+                if length < 0 or length > MAX_POST_PAYLOAD_BYTES:
+                    self.send_response(413)
+                    self.send_header("Content-Type", "application/json")
+                    err_body = json.dumps({"error": "Payload Too Large (max 64KB)"}).encode("utf-8")
+                    self.send_header("Content-Length", str(len(err_body)))
+                    self.end_headers()
+                    self.wfile.write(err_body)
+                    return
+
+                payload = json.loads(self.rfile.read(length).decode("utf-8")) if length > 0 else {}
+                # Ungueltige/leere Werte setzen den Default; get_api_base_url liefert den effektiven Wert zurueck
+                effective_url = set_api_base_url(payload.get("base_url"))
+                body = json.dumps({"status": "updated", "base_url": effective_url}).encode("utf-8")
+                self._send_json_response(200, body)
+            except Exception as e:
+                logger.error(f"Failed to update API config: {e}")
                 body = json.dumps({"error": str(e)}).encode("utf-8")
                 self._send_json_response(400, body)
         else:

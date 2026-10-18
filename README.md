@@ -44,7 +44,7 @@ KDE Plasma 6 Widget and Python backend for monitoring **Claude Code Token Limits
   - **CLI & VS Code Extension Support**: Automatically detects active Claude Code sessions in terminal as well as the official VS Code Extension (`anthropic.claude-code`).
   - **Process-Aware API Polling**: Detects active Claude Code processes via `/proc`; pauses external API polling while idle and reports `0.0%/h (idle)` to avoid unwanted rate limits.
   - **Rate Limit Backoff & Safeguards**: Automatically respects Anthropic's HTTP 429 `Retry-After` headers and enforces a 3-minute minimum interval (180s) between API polls.
-  - **OAuth Usage API Client**: Queries `https://api.anthropic.com/api/oauth/usage` using bearer token from `~/.claude/.credentials.json`.
+  - **OAuth Usage API Client**: Queries `https://api.anthropic.com/api/oauth/usage` using bearer token from `~/.claude/.credentials.json`. The API base URL is configurable in the widget's **API** settings page (e.g. for proxy/gateway setups); leave empty to use the default.
   - **SQLite Snapshot History**: Persists snapshots for trend analysis in `~/.local/share/token-monitor/history.db`.
   - **Mathematical Analysis**: Linear regression (least squares) for burn rate (%/h), pace, and ETA calculations.
   - **Local HTTP Server**: Lightweight REST endpoint (`127.0.0.1:48291/stats`) with TTL caching to avoid unnecessary API requests.

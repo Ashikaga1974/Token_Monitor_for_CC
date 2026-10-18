@@ -22,6 +22,12 @@ ConfigModel {
     }
 
     ConfigCategory {
+        name: "API"
+        icon: "network-server"
+        source: "config/configApi.qml"
+    }
+
+    ConfigCategory {
         name: configModel.isDe ? "Benachrichtigungen" : "Notifications"
         icon: "preferences-desktop-notification"
         source: "config/configNotifications.qml"
