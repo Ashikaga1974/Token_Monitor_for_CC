@@ -30,7 +30,7 @@ journalctl --user -u token-monitor.service -n 50
  - KDE Plasma Version: [e.g. 6.2.0]
  - Python Version: [e.g. 3.12.7]
  - Claude Code Version: [e.g. 0.2.x]
- - Widget Version: [e.g. 0.0.8]
+ - Widget Version: [e.g. 0.0.9]
 
 **Additional context**
 Add any other context about the problem here.
