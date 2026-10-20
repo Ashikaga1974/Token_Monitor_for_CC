@@ -6,7 +6,9 @@ import sys
 import unittest
 from unittest.mock import patch
 
-from backend.cli import collect_from_stdin, format_model_display_name, get_current_model
+import urllib.error
+
+from backend.cli import collect_from_stdin, format_model_display_name, get_current_model, describe_fetch_error
 from backend.storage import StorageDB, SnapshotRecord
 from datetime import datetime, timezone
 from pathlib import Path
@@ -150,5 +152,28 @@ class TestCliHook(unittest.TestCase):
             latest = test_db.get_latest_snapshot()
             self.assertIsNotNone(latest)
             self.assertAlmostEqual(latest.five_hour_utilization, 0.01)
+
+    def test_describe_fetch_error_classifies_expired_token(self):
+        # Abgelaufener OAuth-Token (401) ist die typische Ursache klebender Werte
+        err = urllib.error.HTTPError("http://x", 401, "Unauthorized", {}, None)
+        msg = describe_fetch_error(err)
+        self.assertIn("401", msg)
+        self.assertIn("Token", msg)
+
+    def test_describe_fetch_error_classifies_rate_limit(self):
+        err = urllib.error.HTTPError("http://x", 429, "Too Many Requests", {}, None)
+        self.assertIn("429", describe_fetch_error(err))
+
+    def test_describe_fetch_error_generic_http(self):
+        err = urllib.error.HTTPError("http://x", 500, "Server Error", {}, None)
+        self.assertIn("500", describe_fetch_error(err))
+
+    def test_describe_fetch_error_network(self):
+        err = urllib.error.URLError("connection refused")
+        self.assertIn("Netzwerkfehler", describe_fetch_error(err))
+
+    def test_describe_fetch_error_missing_credentials(self):
+        err = FileNotFoundError("creds")
+        self.assertIn("Credentials", describe_fetch_error(err))
 
 

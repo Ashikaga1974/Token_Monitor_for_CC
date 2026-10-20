@@ -226,6 +226,50 @@ Item {
             }
         }
 
+        // Stale-Daten-Banner: letzter erfolgreicher Abruf liegt deutlich zurück.
+        // Nur zeigen, wenn kein harter Fehler-Banner aktiv ist (sonst doppelte Meldung).
+        Rectangle {
+            visible: root.dataStale && root.errorMessage === ""
+            Layout.fillWidth: true
+            implicitHeight: staleLayout.implicitHeight + Kirigami.Units.smallSpacing * 2
+            color: Qt.rgba(Kirigami.Theme.neutralTextColor.r, Kirigami.Theme.neutralTextColor.g, Kirigami.Theme.neutralTextColor.b, 0.18)
+            border.color: Qt.rgba(Kirigami.Theme.neutralTextColor.r, Kirigami.Theme.neutralTextColor.g, Kirigami.Theme.neutralTextColor.b, 0.4)
+            radius: 4
+
+            RowLayout {
+                id: staleLayout
+                anchors.centerIn: parent
+                width: parent.width - 16
+                spacing: 8
+
+                Kirigami.Icon {
+                    source: "view-refresh"
+                    implicitWidth: Kirigami.Units.iconSizes.small
+                    implicitHeight: Kirigami.Units.iconSizes.small
+                    color: Kirigami.Theme.neutralTextColor
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    color: root.uiTextColor
+                    font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                    text: {
+                        var clock = "";
+                        if (root.lastSuccessIso !== "") {
+                            var dt = new Date(root.lastSuccessIso);
+                            if (!isNaN(dt.getTime())) clock = Qt.formatTime(dt, "hh:mm");
+                        }
+                        var msg = (clock !== "")
+                            ? root.tr("Values out of date — last update %1", clock)
+                            : root.tr("Values out of date");
+                        if (root.fetchError !== "") msg += " · " + root.fetchError;
+                        return msg;
+                    }
+                }
+            }
+        }
+
         // --- SESSION (5 hours) BLOCK ---
         Rectangle {
             Layout.fillWidth: true

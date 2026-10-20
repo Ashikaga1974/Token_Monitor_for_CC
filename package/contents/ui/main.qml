@@ -205,6 +205,24 @@ PlasmoidItem {
     readonly property int rateLimitRemaining: (statsData && statsData.rate_limit_remaining_seconds !== undefined) ? statsData.rate_limit_remaining_seconds : 0
     readonly property bool isSessionActive: (statsData && statsData.is_active) ? true : false
 
+    // --- Stale-Daten-Erkennung ---
+    // Zeitpunkt des letzten erfolgreichen API-Abrufs und ggf. die Ursache eines Fehlschlags.
+    readonly property string lastSuccessIso: (statsData && statsData.last_success_iso) ? statsData.last_success_iso : ""
+    readonly property string fetchError: (statsData && statsData.fetch_error) ? statsData.fetch_error : ""
+    // Alter der angezeigten Daten in Sekunden, gemessen zwischen Backend-Zeitstempel und letztem Erfolg.
+    readonly property int dataAgeSeconds: {
+        if (!statsData || !statsData.last_success_iso || !statsData.timestamp) return 0;
+        var last = new Date(statsData.last_success_iso).getTime();
+        var nowTs = new Date(statsData.timestamp).getTime();
+        if (isNaN(last) || isNaN(nowTs)) return 0;
+        return Math.max(0, Math.round((nowTs - last) / 1000));
+    }
+    // Veraltet, wenn der letzte Erfolg deutlich älter als das Refresh-Intervall ist (min. 5 Min Toleranz).
+    readonly property bool dataStale: {
+        var threshold = Math.max(3 * root.refreshIntervalSeconds, 300);
+        return root.dataAgeSeconds > threshold;
+    }
+
     readonly property string activeModelName: {
         if (statsData && statsData.model && statsData.model.display_name) {
             return statsData.model.display_name;
@@ -238,6 +256,11 @@ PlasmoidItem {
         }
         if (root.isRateLimited) {
             return base + "\n⚠️ " + root.tr("API paused (429: %1s left)", root.rateLimitRemaining);
+        }
+        if (root.dataStale) {
+            var staleMsg = root.tr("Values out of date");
+            if (root.fetchError !== "") staleMsg += " (" + root.fetchError + ")";
+            return base + "\n⚠️ " + staleMsg;
         }
         return base;
     }

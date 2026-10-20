@@ -310,3 +310,9 @@ msgstr "Dienst wird gestartet…"
 msgid "Auto-starts and enables systemd user service 'token-monitor.service'"
 msgstr "Startet und aktiviert automatisch den systemd-Dienst 'token-monitor.service'"
 
+msgid "Values out of date — last update %1"
+msgstr "Werte veraltet — letzte Aktualisierung %1"
+
+msgid "Values out of date"
+msgstr "Werte veraltet"
+

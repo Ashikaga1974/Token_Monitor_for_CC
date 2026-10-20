@@ -4,9 +4,11 @@ import argparse
 from datetime import datetime, timezone
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import re
 import sys
+import urllib.error
 from typing import Dict, Any, Optional, Tuple, List
 
 from .client import fetch_usage_api, is_rate_limited, reset_rate_limit, get_rate_limit_remaining_seconds
@@ -17,6 +19,53 @@ from .calculator import calculate_burn_metrics, calculate_lookback_chart
 logger = logging.getLogger(__name__)
 
 API_MIN_INTERVAL_SECONDS = 180  # 3 Minuten Mindestabstand zum Schutz vor Rate-Limits
+
+
+def setup_logging() -> None:
+    """Richtet persistentes Datei-Logging ein, damit Fehlerursachen eine journald-Rotation überleben.
+
+    Schreibt zusätzlich weiter nach stderr (journald). Mehrfachaufruf ist idempotent.
+    """
+    log_file = get_default_db_path().parent / "token-monitor.log"
+    try:
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+
+    has_file_handler = any(isinstance(h, RotatingFileHandler) for h in root.handlers)
+    if not has_file_handler:
+        fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        file_handler = RotatingFileHandler(
+            log_file, maxBytes=1_000_000, backupCount=3, encoding="utf-8"
+        )
+        file_handler.setFormatter(fmt)
+        root.addHandler(file_handler)
+        # Konsolen-/journald-Ausgabe erhalten
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(fmt)
+        root.addHandler(stream_handler)
+
+
+def describe_fetch_error(exc: Exception) -> str:
+    """Wandelt eine Fetch-Exception in eine kurze, verständliche Ursache für UI und Log um."""
+    if isinstance(exc, urllib.error.HTTPError):
+        if exc.code == 401:
+            return "OAuth-Token abgelaufen oder ungültig (401)"
+        if exc.code == 403:
+            return "Zugriff verweigert (403)"
+        if exc.code == 429:
+            return "Rate-Limit erreicht (429)"
+        return f"HTTP-Fehler {exc.code}"
+    if isinstance(exc, urllib.error.URLError):
+        return f"Netzwerkfehler: {exc.reason}"
+    if isinstance(exc, FileNotFoundError):
+        return "Claude-Credentials nicht gefunden"
+    if isinstance(exc, (ValueError, json.JSONDecodeError)):
+        return f"Ungültige Antwort oder Token: {exc}"
+    return f"Abruf fehlgeschlagen: {type(exc).__name__}"
 
 
 def parse_iso_datetime(dt_val: Any) -> Optional[datetime]:
@@ -206,6 +255,8 @@ def refresh_and_compute_stats(force: bool = False) -> Dict[str, Any]:
     is_active = is_claude_process_running()
 
     raw_data: Optional[Dict[str, Any]] = None
+    # Ursache eines fehlgeschlagenen Abrufs; None, wenn Fetch erfolgreich war oder gar nicht versucht wurde
+    fetch_error: Optional[str] = None
 
     latest_snapshot = db.get_latest_snapshot()
     # Verhindert Überlastung der API bei häufigen Widget-Pings (mind. 180s / 3 Min Abstand, außer bei explizitem force)
@@ -223,9 +274,12 @@ def refresh_and_compute_stats(force: bool = False) -> Dict[str, Any]:
             try:
                 raw_data = fetch_usage_api()
             except Exception as e:
-                logger.error(f"API request failed: {e}")
+                fetch_error = describe_fetch_error(e)
+                logger.error(f"API request failed: {fetch_error} ({e})")
                 raw_data = None
         else:
+            rem = int(get_rate_limit_remaining_seconds())
+            fetch_error = f"Rate-Limit aktiv (Pause {rem}s)"
             logger.info("API request paused: Rate limit backoff is active.")
 
     # 2. Fetch historical snapshots from the past 7 days
@@ -508,11 +562,26 @@ def refresh_and_compute_stats(force: bool = False) -> Dict[str, Any]:
     if current_model and session_metrics:
         session_metrics["model"] = current_model
 
+    # Zeitpunkt der zuletzt gültigen Daten: bei erfolgreichem Live-Fetch "now"
+    # (unabhängig davon, ob storage wegen Dedup keinen neuen Snapshot schrieb),
+    # sonst der Timestamp des jüngsten Snapshots (z.B. letzter statusline-Hook-Push).
+    if raw_data is not None:
+        last_success_dt = now
+    elif records:
+        last_success_dt = records[-1].timestamp
+    else:
+        last_success_dt = None
+    last_success_iso = last_success_dt.isoformat() if last_success_dt else None
+
     return {
         "timestamp": now.isoformat(),
         "is_active": is_active,
         "is_rate_limited": is_rate_limited(),
         "rate_limit_remaining_seconds": int(get_rate_limit_remaining_seconds()),
+        # Stale-Kennzeichnung: Zeitpunkt des letzten erfolgreichen API-Abrufs und ggf. Fehlerursache.
+        # Das UI entscheidet anhand des Alters, ob ein "veraltet"-Hinweis gezeigt wird.
+        "last_success_iso": last_success_iso,
+        "fetch_error": fetch_error,
         "model": current_model,
         "model_limits": model_limits,
         "session": session_metrics,
@@ -553,6 +622,7 @@ def main():
         stats = refresh_and_compute_stats()
         print(json.dumps(stats, indent=2))
     elif args.command == "serve":
+        setup_logging()
         from .server import run_server
         run_server(args.port)
     elif args.command == "test-notify":
