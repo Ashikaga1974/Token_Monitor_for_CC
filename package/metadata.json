@@ -15,7 +15,7 @@
             }
         ],
         "Website": "https://kde.buells-united.com",
-        "Version": "0.0.9",
+        "Version": "0.0.10",
         "License": "GPL-3.0-or-later"
     },
     "X-Plasma-API-Minimum-Version": "6.0",

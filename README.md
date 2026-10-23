@@ -3,7 +3,7 @@
 [![KDE Plasma 6](https://img.shields.io/badge/KDE%20Plasma-6.0%2B-1d99f3?style=flat-square&logo=kde&logoColor=white)](https://kde.org)
 [![KDE Store](https://img.shields.io/badge/KDE%20Store-2379462-1d99f3?style=flat-square&logo=kde&logoColor=white)](https://store.kde.org/p/2379462)
 [![Python 3](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-3776ab?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![Version](https://img.shields.io/badge/version-v0.0.9-orange?style=flat-square)](package/metadata.json)
+[![Version](https://img.shields.io/badge/version-v0.0.10-orange?style=flat-square)](package/metadata.json)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-51%20passed-brightgreen?style=flat-square)](#)
 [![Dependencies](https://img.shields.io/badge/dependencies-Zero%20(stdlib)-success?style=flat-square)](#)
