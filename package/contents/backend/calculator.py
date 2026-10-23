@@ -78,26 +78,53 @@ def calculate_burn_rate_linear_regression(
 
 
 
+AHEAD_OF_PACE_MIN_UTILIZATION_PCT = 15.0
+AHEAD_OF_PACE_MIN_PACE = 0.10
+RECENT_BURN_WINDOW_FRACTION = 0.25
+BURN_RATE_MIN_POINTS = 3
+
+
+def calculate_recent_burn_rate(
+    points: List[Tuple[float, float, float]],
+    now_unix_seconds: float,
+    window_hours: float,
+) -> float:
+    """Calculates burn rate preferring a sliding recent window (25% of window length) with fallback to last N points."""
+    cutoff = now_unix_seconds - (window_hours * 3600.0 * RECENT_BURN_WINDOW_FRACTION)
+    recent = [(p[0], p[1]) for p in points if p[2] >= cutoff]
+    if len(recent) >= 2:
+        return calculate_burn_rate_linear_regression(recent, window_hours=window_hours)
+
+    fallback = [(p[0], p[1]) for p in points[-BURN_RATE_MIN_POINTS:]]
+    return calculate_burn_rate_linear_regression(fallback, window_hours=window_hours)
+
+
 def calculate_lookback_chart(
     records: List[SnapshotRecord],
     limit_type: str,
     current_time: datetime,
     lookback_hours: float,
     current_util_pct: float,
+    label: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Calculates a lookback chart series covering the last X hours up to now."""
+    """Calculates a lookback chart series covering the last X hours up to now (ported from Token_Monitor_For_Win)."""
     win_start = current_time.timestamp() - (lookback_hours * 3600.0)
-    total_sec = lookback_hours * 3600.0
-    # Bucket-Größe nach Spanne: 10min (≤7h), 30min (≤7d), 1 Tag (lange Lookbacks wie 30d)
+
+    # Bucket-Breite staffeln: 10 min (≤7h), 30 min (≤24h), 6 h (Monat/30d)
     if lookback_hours <= 7.0:
         bucket_sec = 600.0
-    elif lookback_hours <= 168.0:
+    elif lookback_hours <= 24.0:
         bucket_sec = 1800.0
     else:
-        bucket_sec = 86400.0
+        bucket_sec = 21600.0
 
-    raw_entries: List[Tuple[float, float, Optional[datetime]]] = []
-    for record in records:
+    buckets: Dict[int, List[Tuple[float, float]]] = {}
+    prev_val: Optional[float] = None
+
+    # Sort records chronologically
+    sorted_records = sorted(records, key=lambda r: r.timestamp.timestamp())
+
+    for record in sorted_records:
         val: Optional[float] = None
         record_resets_at: Optional[datetime] = None
         if limit_type == "session":
@@ -117,118 +144,51 @@ def calculate_lookback_chart(
             continue
 
         pct = val * 100.0 if val <= 1.0 else val
-        raw_entries.append((record.timestamp.timestamp(), pct, record_resets_at))
+        # Korrumpierte 0%-Dropouts bei bereits etablierter Nutzung ignorieren
+        if pct <= 0.0 and current_util_pct > 5.0:
+            continue
 
-    raw_entries.sort(key=lambda item: item[0])
+        ts = record.timestamp.timestamp()
+        if ts < win_start:
+            # Falls vor dem Fensterstart bereits ein Reset stattfand, Vorwert auf 0.0 nullen
+            if record_resets_at is not None and record_resets_at.timestamp() < win_start:
+                prev_val = 0.0
+            else:
+                prev_val = pct
+            continue
 
-    # Isolierte 0%-Dropouts innerhalb desselben Reset-Zyklus herausfiltern
-    cleaned_entries: List[Tuple[float, float, Optional[datetime]]] = []
-    for i, entry in enumerate(raw_entries):
-        ts, pct, r_reset = entry
-        if pct <= 0.0 and 0 < i < len(raw_entries) - 1:
-            prev_ts, prev_pct, prev_reset = raw_entries[i - 1]
-            next_ts, next_pct, next_reset = raw_entries[i + 1]
-            same_cycle = (prev_reset == next_reset) or (
-                prev_reset is not None and next_reset is not None and abs((next_reset - prev_reset).total_seconds()) < 3600
-            )
-            if prev_pct > 5.0 and next_pct > 5.0 and same_cycle:
-                continue
-        cleaned_entries.append(entry)
-
-    # Segmente anhand von Reset-Ereignissen aufteilen, um Vermischung über Resets hinweg auszuschließen
-    segments: List[List[Tuple[float, float]]] = []
-    current_segment: List[Tuple[float, float]] = []
-    resets: List[Tuple[float, float, float, float]] = []  # (t_reset, prev_pct, next_ts, next_pct)
-
-    for i in range(len(cleaned_entries)):
-        ts, pct, r_reset = cleaned_entries[i]
-        if i > 0:
-            prev_ts, prev_pct, prev_reset = cleaned_entries[i - 1]
-            is_reset = False
-            # Zykluswechsel anhand des Reset-Datums (z.B. +7 Tage oder +5 Stunden)
-            if prev_reset is not None and r_reset is not None and (r_reset - prev_reset).total_seconds() > 3600:
-                is_reset = True
-            # Oder sprunghafter Auslastungsabfall um mindestens 10%
-            elif (prev_pct - pct) >= 10.0:
-                is_reset = True
-
-            if is_reset:
-                if prev_reset is not None and prev_ts <= prev_reset.timestamp() <= ts:
-                    t_reset = prev_reset.timestamp()
-                else:
-                    t_reset = (prev_ts + ts) / 2.0
-                resets.append((t_reset, prev_pct, ts, pct))
-                segments.append(current_segment)
-                current_segment = []
-
-        current_segment.append((ts, pct))
-
-    if current_segment:
-        segments.append(current_segment)
+        b_idx = int((ts - win_start) // bucket_sec)
+        buckets.setdefault(b_idx, []).append((ts, pct))
 
     series: List[Dict[str, float]] = []
-    prev_val: Optional[float] = None
 
-    def add_point(norm_x_val: float, y_val: float) -> None:
-        clamped_x = max(0.0, min(1.0, round(norm_x_val, 4)))
-        rounded_y = round(y_val, 1)
-        if series and series[-1]["x"] == clamped_x and series[-1]["y"] == rounded_y:
-            return
-        series.append({"x": clamped_x, "y": rounded_y})
-
-    for seg_idx, seg in enumerate(segments):
-        seg_buckets: Dict[int, List[Tuple[float, float]]] = {}
-        for ts, pct in seg:
-            if ts < win_start:
-                prev_val = pct
-                continue
-            b_idx = int((ts - win_start) // bucket_sec)
-            seg_buckets.setdefault(b_idx, []).append((ts, pct))
-
-        for b_idx in sorted(seg_buckets.keys()):
-            items = seg_buckets[b_idx]
-            median_y = float(median([it[1] for it in items]))
-            latest_ts = items[-1][0]
-            norm_x = (latest_ts - win_start) / total_sec
-            add_point(norm_x, median_y)
-
-        # Wenn nach diesem Segment ein Reset stattfand:
-        if seg_idx < len(resets):
-            t_reset, prev_pct, next_ts, next_pct = resets[seg_idx]
-            if t_reset < win_start:
-                # Reset lag vor dem Lookback-Fenster: Vergangener Wert am Fensterstart ist bereits 0%
-                if next_ts <= win_start:
-                    prev_val = next_pct
-                else:
-                    prev_val = 0.0
-            else:
-                norm_x_reset = (t_reset - win_start) / total_sec
-                # 1. Bis zum Reset-Moment alter Wert
-                add_point(norm_x_reset, prev_pct)
-                # 2. Exakt am Reset senkrechter Abfall auf 0.0%
-                add_point(norm_x_reset, 0.0)
-                # 3. Flach auf 0.0% bleiben bis zum ersten neuen Datenpunkt
-                if next_ts > t_reset:
-                    norm_x_next = (next_ts - win_start) / total_sec
-                    if norm_x_next > norm_x_reset:
-                        add_point(norm_x_next, 0.0)
-
-    # Vorangegangenen Wert am Fensterstart (x=0.0) verankern
+    # Bekannten Vorwert bei x=0.0 als Anker setzen
     if prev_val is not None:
-        if not series or series[0]["x"] > 0.0:
-            series.insert(0, {"x": 0.0, "y": round(prev_val, 1)})
+        series.append({"x": 0.0, "y": round(prev_val, 1)})
 
-    # Aktuellen Wert am Fensterende (x=1.0) verankern
+    for b_idx in sorted(buckets.keys()):
+        items = buckets[b_idx]
+        median_y = round(float(median([it[1] for it in items])), 1)
+        latest_ts = items[-1][0]
+        norm_x = (latest_ts - win_start) / (lookback_hours * 3600.0)
+        clamped_x = max(0.0, min(1.0, round(norm_x, 4)))
+        if series and series[-1]["x"] == clamped_x:
+            series[-1]["y"] = median_y
+        else:
+            series.append({"x": clamped_x, "y": median_y})
+
+    rounded_curr = round(current_util_pct, 1)
     if not series:
-        add_point(0.0, current_util_pct)
-        add_point(1.0, current_util_pct)
+        series.append({"x": 0.0, "y": rounded_curr})
+        series.append({"x": 1.0, "y": rounded_curr})
     elif series[-1]["x"] < 1.0:
-        add_point(1.0, current_util_pct)
+        series.append({"x": 1.0, "y": rounded_curr})
     else:
-        series[-1]["y"] = round(current_util_pct, 1)
+        series[-1]["y"] = rounded_curr
 
-    # Lange Spannen in Tagen beschriften (z.B. 720h -> "30d"); kürzere bleiben in Stunden
-    if lookback_hours >= 48.0 and lookback_hours % 24.0 == 0:
+    if label:
+        tag = label
+    elif lookback_hours >= 48.0 and lookback_hours % 24.0 == 0:
         tag = f"{int(lookback_hours / 24)}d"
     else:
         tag = f"{int(lookback_hours)}h"
@@ -323,7 +283,7 @@ def calculate_burn_metrics(
         buckets.setdefault(b_idx, []).append((ts, pct))
 
     # Build smoothed usage points and linear regression input
-    points: List[Tuple[float, float]] = []
+    points: List[Tuple[float, float, float]] = []
     usage_series: List[Dict[str, float]] = []
     first_dt: Optional[datetime] = None
     is_weekly = window_hours > 5.0
@@ -332,7 +292,7 @@ def calculate_burn_metrics(
     if is_weekly:
         first_b_idx = min(buckets.keys()) if buckets else 0
         if first_b_idx > 0 or not buckets:
-            points.append((0.0, 0.0))
+            points.append((0.0, 0.0, window_start))
             usage_series.append({"x": 0.0, "y": 0.0})
 
     for b_idx in sorted(buckets.keys()):
@@ -347,7 +307,7 @@ def calculate_burn_metrics(
                 first_dt = datetime.fromtimestamp(latest_ts, tz=timezone.utc)
             elapsed_h = (latest_ts - first_dt.timestamp()) / 3600.0
 
-        points.append((elapsed_h, median_y))
+        points.append((elapsed_h, median_y, latest_ts))
 
         norm_x = (latest_ts - window_start) / (window_hours * 3600.0)
         norm_x_clamped = max(0.0, min(1.0, round(norm_x, 4)))
@@ -370,17 +330,18 @@ def calculate_burn_metrics(
     else:
         usage_series[-1]["y"] = round(util_pct, 1)
 
-    # Calculate slope (burn rate in %/h)
+    # Calculate slope (burn rate in %/h) via sliding recent window
     if is_active:
-        effective_lookback = max_lookback_hours
-        if effective_lookback is None:
-            # 45 Minuten für 5h-Session; für wöchentliche Fenster (168h) kein künstlicher 24h-Cutoff,
-            # sondern den bisherigen Zyklus seit Wochenbeginn betrachten
-            effective_lookback = 0.75 if window_hours <= 5.0 else None
-
-        burn_pct_per_hour = calculate_burn_rate_linear_regression(
-            points, window_hours=window_hours, max_lookback_hours=effective_lookback
-        )
+        if max_lookback_hours is not None:
+            burn_pct_per_hour = calculate_burn_rate_linear_regression(
+                [(p[0], p[1]) for p in points],
+                window_hours=window_hours,
+                max_lookback_hours=max_lookback_hours,
+            )
+        else:
+            burn_pct_per_hour = calculate_recent_burn_rate(
+                points, current_time.timestamp(), window_hours
+            )
     else:
         burn_pct_per_hour = 0.0
 
@@ -408,9 +369,16 @@ def calculate_burn_metrics(
 
     resets_in_minutes = max(0, int((resets_at - current_time).total_seconds() / 60.0))
 
-    # Compare actual consumption against pace (with 5% buffer)
+    # Verbrauch gegen Soll-Tempo vergleichen (mit 5% Puffer). "Über Budget" aber erst ab einem
+    # absoluten Mindestverbrauch und Mindest-Zeitfortschritt, um Fehlalarme kurz nach dem Reset
+    # zu vermeiden (dann ist pace ~0 und jede kleine Nutzung läge sonst über dem Soll).
     current_ratio = util_pct / 100.0
-    if current_ratio > pace + 0.05:
+    ahead_of_pace = (
+        current_ratio > pace + 0.05
+        and util_pct >= AHEAD_OF_PACE_MIN_UTILIZATION_PCT
+        and pace >= AHEAD_OF_PACE_MIN_PACE
+    )
+    if ahead_of_pace:
         pace_status = "ahead_of_pace"
     elif current_ratio < pace - 0.05:
         pace_status = "behind_pace"

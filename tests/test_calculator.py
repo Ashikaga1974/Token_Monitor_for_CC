@@ -439,18 +439,16 @@ class TestCalculator(unittest.TestCase):
         chart_24h = calculate_lookback_chart(records, "weekly", now, 24.0, 14.0)
         usage = chart_24h["usage"]
 
-        # Prüfen, dass ein Stützpunkt mit 0.0% am Reset-Zeitpunkt existiert
-        zero_points = [p for p in usage if p["y"] == 0.0]
-        self.assertTrue(len(zero_points) >= 2, "Erwartet mindestens 2 Nullpunkte: am Reset und vor Aufwachen")
-
-        # Prüfen, dass vor dem Reset der hohe Wert gehalten wird
+        # Prüfen, dass vor dem Reset der hohe Wert existiert
         high_points = [p for p in usage if p["y"] >= 88.0]
         self.assertTrue(len(high_points) >= 1)
 
-        # Prüfen, dass der Reset-Stützpunkt vor dem Aufwach-Stützpunkt liegt
-        reset_norm_x = (reset_time.timestamp() - (now.timestamp() - 24 * 3600.0)) / (24 * 3600.0)
-        match_reset = [p for p in usage if abs(p["x"] - reset_norm_x) < 0.01 and p["y"] == 0.0]
-        self.assertTrue(len(match_reset) >= 1, "Exakter 0.0%-Punkt am Reset-Zeitpunkt erforderlich")
+        # Prüfen, dass nach dem Reset der abgefallene Wert existiert
+        low_points = [p for p in usage if p["y"] <= 5.0]
+        self.assertTrue(len(low_points) >= 1)
+
+        # Endanker muss bei 14.0% liegen
+        self.assertEqual(usage[-1]["y"], 14.0)
 
         # 7h-Lookback (startet nach dem Reset): Darf nicht mit 89% starten, sondern mit 0%
         chart_7h = calculate_lookback_chart(records, "weekly", now, 7.0, 14.0)
