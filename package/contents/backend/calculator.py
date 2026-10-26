@@ -118,8 +118,9 @@ def calculate_lookback_chart(
     else:
         bucket_sec = 21600.0
 
-    buckets: Dict[int, List[Tuple[float, float]]] = {}
+    buckets: Dict[int, List[Tuple[float, float, Optional[datetime]]]] = {}
     prev_val: Optional[float] = None
+    prev_resets_at: Optional[datetime] = None
 
     # Sort records chronologically
     sorted_records = sorted(records, key=lambda r: r.timestamp.timestamp())
@@ -155,21 +156,46 @@ def calculate_lookback_chart(
                 prev_val = 0.0
             else:
                 prev_val = pct
+            prev_resets_at = record_resets_at
             continue
 
         b_idx = int((ts - win_start) // bucket_sec)
-        buckets.setdefault(b_idx, []).append((ts, pct))
+        buckets.setdefault(b_idx, []).append((ts, pct, record_resets_at))
 
     series: List[Dict[str, float]] = []
+    running_y = 0.0
+    last_resets_at: Optional[datetime] = prev_resets_at
+    reset_drop_threshold = 10.0
 
     # Bekannten Vorwert bei x=0.0 als Anker setzen
     if prev_val is not None:
-        series.append({"x": 0.0, "y": round(prev_val, 1)})
+        running_y = round(prev_val, 1)
+        series.append({"x": 0.0, "y": running_y})
 
     for b_idx in sorted(buckets.keys()):
         items = buckets[b_idx]
         median_y = round(float(median([it[1] for it in items])), 1)
         latest_ts = items[-1][0]
+        latest_resets_at = items[-1][2]
+
+        is_reset = False
+        if last_resets_at is not None and latest_resets_at is not None:
+            t1 = last_resets_at if last_resets_at.tzinfo else last_resets_at.replace(tzinfo=timezone.utc)
+            t2 = latest_resets_at if latest_resets_at.tzinfo else latest_resets_at.replace(tzinfo=timezone.utc)
+            if abs((t2 - t1).total_seconds()) > 3600.0:
+                is_reset = True
+        if not is_reset and (running_y - median_y >= reset_drop_threshold):
+            is_reset = True
+
+        if is_reset:
+            running_y = median_y
+        else:
+            # Innerhalb desselben Zyklus fängt max() Rundungs- und API-Jitter nach unten ab
+            median_y = max(running_y, median_y)
+            running_y = median_y
+
+        last_resets_at = latest_resets_at
+
         norm_x = (latest_ts - win_start) / (lookback_hours * 3600.0)
         clamped_x = max(0.0, min(1.0, round(norm_x, 4)))
         if series and series[-1]["x"] == clamped_x:
@@ -178,6 +204,9 @@ def calculate_lookback_chart(
             series.append({"x": clamped_x, "y": median_y})
 
     rounded_curr = round(current_util_pct, 1)
+    if series and (running_y - rounded_curr < reset_drop_threshold):
+        rounded_curr = max(running_y, rounded_curr)
+
     if not series:
         series.append({"x": 0.0, "y": rounded_curr})
         series.append({"x": 1.0, "y": rounded_curr})
@@ -295,10 +324,15 @@ def calculate_burn_metrics(
             points.append((0.0, 0.0, window_start))
             usage_series.append({"x": 0.0, "y": 0.0})
 
+    running_usage_y = 0.0
     for b_idx in sorted(buckets.keys()):
         items = buckets[b_idx]
         median_y = round(float(median([it[1] for it in items])), 1)
         latest_ts = items[-1][0]
+
+        # Monotonie: innerhalb des Zyklus nach Reset fängt max() Rundungs- und API-Jitter ab
+        median_y = max(running_usage_y, median_y)
+        running_usage_y = median_y
 
         if is_weekly:
             elapsed_h = (latest_ts - window_start) / 3600.0
@@ -323,12 +357,13 @@ def calculate_burn_metrics(
     elapsed_hours = (current_time.timestamp() - window_start) / 3600.0
     now_norm_x = max(0.0, min(1.0, round(elapsed_hours / window_hours, 4)))
 
+    curr_usage_y = max(running_usage_y, round(util_pct, 1)) if usage_series else round(util_pct, 1)
     if not usage_series:
-        usage_series.append({"x": now_norm_x, "y": round(util_pct, 1)})
+        usage_series.append({"x": now_norm_x, "y": curr_usage_y})
     elif usage_series[-1]["x"] < now_norm_x:
-        usage_series.append({"x": now_norm_x, "y": round(util_pct, 1)})
+        usage_series.append({"x": now_norm_x, "y": curr_usage_y})
     else:
-        usage_series[-1]["y"] = round(util_pct, 1)
+        usage_series[-1]["y"] = curr_usage_y
 
     # Calculate slope (burn rate in %/h) via sliding recent window
     if is_active:

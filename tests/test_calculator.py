@@ -558,6 +558,99 @@ class TestCalculator(unittest.TestCase):
         self.assertIn("charts", metrics)
         self.assertIn("24h", metrics["charts"])
 
+    def test_lookback_chart_monotonic_smoothing_ignores_jitter(self):
+        """Prüft, dass API-Jitter (50% -> 49% -> 50%) innerhalb eines Zyklus nicht zum Abfallen führt."""
+        now = datetime(2026, 10, 26, 18, 0, tzinfo=timezone.utc)
+        resets_at = now + timedelta(days=4)
+        from backend.storage import SnapshotRecord
+        from backend.calculator import calculate_lookback_chart
+
+        records = [
+            SnapshotRecord(
+                timestamp=now - timedelta(hours=4),
+                five_hour_utilization=0.1,
+                five_hour_resets_at=None,
+                seven_day_all_utilization=0.50,
+                seven_day_all_resets_at=resets_at,
+                seven_day_sonnet_utilization=None,
+                seven_day_sonnet_resets_at=None,
+            ),
+            SnapshotRecord(
+                timestamp=now - timedelta(hours=2),
+                five_hour_utilization=0.1,
+                five_hour_resets_at=None,
+                seven_day_all_utilization=0.49,  # Jitter nach unten
+                seven_day_all_resets_at=resets_at,
+                seven_day_sonnet_utilization=None,
+                seven_day_sonnet_resets_at=None,
+            ),
+            SnapshotRecord(
+                timestamp=now - timedelta(minutes=30),
+                five_hour_utilization=0.1,
+                five_hour_resets_at=None,
+                seven_day_all_utilization=0.50,
+                seven_day_all_resets_at=resets_at,
+                seven_day_sonnet_utilization=None,
+                seven_day_sonnet_resets_at=None,
+            ),
+        ]
+
+        chart_7h = calculate_lookback_chart(
+            records=records,
+            limit_type="weekly",
+            current_time=now,
+            lookback_hours=7.0,
+            current_util_pct=50.0,
+        )
+
+        y_vals = [pt["y"] for pt in chart_7h["usage"]]
+        # Kein Punkt darf kleiner sein als der vorherige
+        for i in range(len(y_vals) - 1):
+            self.assertGreaterEqual(y_vals[i + 1], y_vals[i])
+        self.assertEqual(y_vals, [50.0, 50.0, 50.0, 50.0])
+
+    def test_lookback_chart_allows_real_reset(self):
+        """Prüft, dass ein echter Reset (Drop >= 10% oder geändertes resets_at) korrekt nach unten geht."""
+        now = datetime(2026, 10, 26, 18, 0, tzinfo=timezone.utc)
+        old_resets_at = now - timedelta(hours=2)
+        new_resets_at = now + timedelta(days=7)
+        from backend.storage import SnapshotRecord
+        from backend.calculator import calculate_lookback_chart
+
+        records = [
+            SnapshotRecord(
+                timestamp=now - timedelta(hours=5),
+                five_hour_utilization=0.1,
+                five_hour_resets_at=None,
+                seven_day_all_utilization=0.60,
+                seven_day_all_resets_at=old_resets_at,
+                seven_day_sonnet_utilization=None,
+                seven_day_sonnet_resets_at=None,
+            ),
+            SnapshotRecord(
+                timestamp=now - timedelta(hours=1),
+                five_hour_utilization=0.01,
+                five_hour_resets_at=None,
+                seven_day_all_utilization=0.02,
+                seven_day_all_resets_at=new_resets_at,
+                seven_day_sonnet_utilization=None,
+                seven_day_sonnet_resets_at=None,
+            ),
+        ]
+
+        chart_7h = calculate_lookback_chart(
+            records=records,
+            limit_type="weekly",
+            current_time=now,
+            lookback_hours=7.0,
+            current_util_pct=2.0,
+        )
+
+        y_vals = [pt["y"] for pt in chart_7h["usage"]]
+        # Nach dem Reset muss der Wert auf 2.0 gefallen sein
+        self.assertEqual(y_vals[-1], 2.0)
+        self.assertLess(y_vals[-1], y_vals[0])
+
 
 if __name__ == "__main__":
     unittest.main()
